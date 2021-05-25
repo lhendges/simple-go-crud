@@ -23,7 +23,7 @@ func init() {
 
 func (p *Person) CreatePerson() (int64, error) {
 	insertedId := 0
-	query := fmt.Sprintf("INSERT INTO PERSONS (name, age) VALUES ('%s', %d); SELECT SCOPE_IDENTITY()", p.Name, p.Age)
+	query := fmt.Sprintf("INSERT INTO PERSONS (name, age) VALUES ('%s', %d) RETURNING Id", p.Name, p.Age)
 	err := db.QueryRow(query).Scan(&insertedId)
 
 	if err != nil {
@@ -62,7 +62,7 @@ func GetPersonById(id int64) (Person, error) {
 
 	err := row.Scan(&person.Id, &person.Name, &person.Age)
 
-	if err == sql.ErrNoRows {
+	if err != nil && err == sql.ErrNoRows {
 		return Person{}, errors.New("person not found")
 	}
 
