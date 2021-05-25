@@ -19,9 +19,11 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 	id, err := newPerson.CreatePerson()
 
 	if err != nil {
+		response := MessageResponse{Message: err.Error()}
+		res, _ := utils.ToJson(response)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(err.Error()))
+		w.Write(res)
 	} else {
 		response := MessageResponse{Message: fmt.Sprintf("Registro %d inserido com sucesso", id)}
 		res, _ := utils.ToJson(response)
@@ -29,18 +31,20 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(res)
 	}
+
 }
 
 func GetAllPersons(w http.ResponseWriter, r *http.Request) {
 	var persons []person.Person
 	persons, err := person.GetAllPersons()
 
-	res, _ := utils.ToJson(persons)
 	if err != nil {
+		res, _ := utils.ToJson(MessageResponse{Message: err.Error()})
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(err.Error()))
+		w.Write(res)
 	} else {
+		res, _ := utils.ToJson(persons)
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(res)
@@ -54,16 +58,18 @@ func GetPersonById(w http.ResponseWriter, r *http.Request) {
 
 	foundPerson, err := person.GetPersonById(ID)
 
-	res, _ := utils.ToJson(foundPerson)
 	if parseErr != nil {
+		res, _ := utils.ToJson(MessageResponse{Message: parseErr.Error()})
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(err.Error()))
+		w.Write(res)
 	} else if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		res, _ := utils.ToJson(MessageResponse{Message: err.Error()})
+		w.WriteHeader(http.StatusNotFound)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(err.Error()))
+		w.Write(res)
 	} else {
+		res, _ := utils.ToJson(foundPerson)
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(res)
@@ -85,13 +91,15 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	res, _ := utils.ToJson(updatedPerson)
 
 	if findErr != nil {
+		res, _ := utils.ToJson(MessageResponse{Message: findErr.Error()})
 		w.WriteHeader(http.StatusNotFound)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(findErr.Error()))
+		w.Write(res)
 	} else if updateErr != nil {
+		res, _ := utils.ToJson(MessageResponse{Message: updateErr.Error()})
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(updateErr.Error()))
+		w.Write(res)
 	} else {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
@@ -105,27 +113,30 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 	ID, parseErr := strconv.ParseInt(requestedId, 0, 0)
 
 	if parseErr != nil {
+		res, _ := utils.ToJson(MessageResponse{Message: parseErr.Error()})
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(parseErr.Error()))
+		w.Write(res)
 		return
 	}
 
 	foundPerson, findErr := person.GetPersonById(ID)
 
 	if findErr != nil {
+		res, _ := utils.ToJson(MessageResponse{Message: findErr.Error()})
 		w.WriteHeader(http.StatusNotFound)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(findErr.Error()))
+		w.Write(res)
 		return
 	}
 
 	delErr := foundPerson.DeletePerson()
 
 	if delErr != nil {
+		res, _ := utils.ToJson(MessageResponse{Message: delErr.Error()})
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(delErr.Error()))
+		w.Write(res)
 		return
 	}
 
